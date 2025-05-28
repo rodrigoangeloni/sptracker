@@ -1,0 +1,267 @@
+# Orange Pi build configuration file
+# Copy this to orangepi-config.py and edit as needed
+
+# Orange Pi connection settings
+ORANGEPI_CONFIG = {
+    # Network configuration
+    'host': 'orangepi.local',  # Orange Pi hostname or IP address
+    'user': 'orangepi',        # Username on Orange Pi
+    'ssh_port': 22,            # SSH port
+    'ssh_key': None,           # Path to SSH private key (None for password auth)
+    
+    # Build configuration
+    'build_path': '/home/orangepi/sptracker_build',
+    'deploy_path': '/home/orangepi/stracker',
+    'python_version': '3.7',   # Minimum Python version required
+    
+    # Optimization settings
+    'optimize_for_size': True,     # Optimize binary size
+    'strip_debug': True,           # Strip debug symbols
+    'use_sqlite_only': True,       # Only use SQLite (no PostgreSQL)
+    'minimal_install': True,       # Skip optional dependencies
+    
+    # Service configuration
+    'enable_systemd': True,        # Create systemd service
+    'enable_init_script': True,    # Create init.d script
+    'auto_start': True,            # Start service after install
+    
+    # Web interface settings
+    'web_port': 50041,             # Web interface port
+    'web_bind_all': True,          # Bind to all interfaces (0.0.0.0)
+    
+    # Performance tuning for Orange Pi
+    'memory_optimization': {
+        'cache_size': 50,          # Reduced cache size
+        'save_interval': 300,      # Save every 5 minutes
+        'max_sessions': 100,       # Limit concurrent sessions
+        'gc_threshold': 1000,      # Garbage collection threshold
+    },
+    
+    # Hardware-specific settings
+    'orange_pi_model': 'auto',     # auto-detect or specify model
+    'cpu_cores': 'auto',           # auto-detect or specify number
+    'max_memory_mb': 512,          # Maximum memory usage in MB
+    
+    # Development settings
+    'debug_mode': False,           # Enable debug logging
+    'profile_performance': False,  # Enable performance profiling
+    'enable_remote_debug': False,  # Allow remote debugging
+}
+
+# Package dependencies for different Orange Pi models
+ORANGEPI_MODELS = {
+    'orangepi-zero': {
+        'memory_mb': 256,
+        'cpu_cores': 1,
+        'optimizations': ['minimal_packages', 'low_memory']
+    },
+    'orangepi-one': {
+        'memory_mb': 512,
+        'cpu_cores': 4,
+        'optimizations': ['balanced']
+    },
+    'orangepi-pc': {
+        'memory_mb': 1024,
+        'cpu_cores': 4,
+        'optimizations': ['performance']
+    },
+    'orangepi-plus': {
+        'memory_mb': 2048,
+        'cpu_cores': 4,
+        'optimizations': ['full_features']
+    }
+}
+
+# Build optimizations based on available resources
+BUILD_OPTIMIZATIONS = {
+    'minimal_packages': {
+        'exclude_modules': ['tkinter', 'matplotlib', 'numpy', 'scipy'],
+        'pyinstaller_options': ['--exclude-module=tkinter', '--strip'],
+        'memory_limit': 200
+    },
+    'low_memory': {
+        'swap_size': '1G',
+        'compile_jobs': 1,
+        'pyinstaller_options': ['--onefile', '--strip'],
+        'memory_limit': 400
+    },
+    'balanced': {
+        'compile_jobs': 2,
+        'pyinstaller_options': ['--strip'],
+        'memory_limit': 800
+    },
+    'performance': {
+        'compile_jobs': 4,
+        'pyinstaller_options': [],
+        'memory_limit': 1500
+    },
+    'full_features': {
+        'include_optional': True,
+        'compile_jobs': 4,
+        'enable_postgresql': True,
+        'memory_limit': 2000
+    }
+}
+
+# Deployment templates
+DEPLOYMENT_TEMPLATES = {
+    'systemd_service': '''
+[Unit]
+Description=sptracker stracker server for Assetto Corsa
+After=network.target
+
+[Service]
+Type=simple
+User={user}
+Group={user}
+WorkingDirectory={deploy_path}
+ExecStart={deploy_path}/stracker_orangepi_arm32
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Performance and security
+Nice=5
+IOSchedulingClass=2
+IOSchedulingPriority=7
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
+''',
+    
+    'init_script': '''#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          stracker
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: sptracker stracker server
+# Description:       Assetto Corsa sptracker stracker server for Orange Pi
+### END INIT INFO
+
+USER="{user}"
+DAEMON="stracker_orangepi_arm32"
+ROOT_DIR="{deploy_path}"
+SERVER="$ROOT_DIR/$DAEMON"
+LOCK_FILE="/var/lock/stracker"
+
+start() {{
+    if [ -f "$LOCK_FILE" ] ; then
+        echo "stracker is already running"
+        return 1
+    fi
+    echo -n "Starting $DAEMON: "
+    runuser -l "$USER" -c "$SERVER" && echo " OK" || echo " ERROR"
+    echo $(pgrep -f $DAEMON) > "$LOCK_FILE"
+}}
+
+stop() {{
+    if [ ! -f "$LOCK_FILE" ] ; then
+        echo "stracker is not running"
+        return 1
+    fi
+    echo -n "Shutting down $DAEMON: "
+    pid=$(cat "$LOCK_FILE")
+    kill -15 $pid && echo " OK" || echo " ERROR"
+    rm -f "$LOCK_FILE"
+}}
+
+status() {{
+    if [ -f "$LOCK_FILE" ] ; then
+        echo "stracker is running (PID: $(cat $LOCK_FILE))"
+    else
+        echo "stracker is not running"
+    fi
+}}
+
+case "$1" in
+    start)   start ;;
+    stop)    stop ;;
+    status)  status ;;
+    restart) stop; start ;;
+    *)       echo "Usage: $0 {{start|stop|status|restart}}" ;;
+esac
+
+exit 0
+''',
+    
+    'nginx_config': '''
+server {{
+    listen 80;
+    server_name {host};
+    
+    location / {{
+        proxy_pass http://127.0.0.1:{web_port};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }}
+    
+    # Static files
+    location /static/ {{
+        alias {deploy_path}/http_static/;
+        expires 1d;
+        add_header Cache-Control "public, immutable";
+    }}
+}}
+'''
+}
+
+# Validation functions
+def validate_config():
+    """Validate the Orange Pi configuration"""
+    errors = []
+    
+    # Check required fields
+    required_fields = ['host', 'user', 'build_path', 'deploy_path']
+    for field in required_fields:
+        if not ORANGEPI_CONFIG.get(field):
+            errors.append(f"Missing required field: {field}")
+    
+    # Validate memory settings
+    max_memory = ORANGEPI_CONFIG.get('max_memory_mb', 512)
+    if max_memory < 256:
+        errors.append("max_memory_mb should be at least 256 MB")
+    
+    # Validate port
+    web_port = ORANGEPI_CONFIG.get('web_port', 50041)
+    if not (1024 <= web_port <= 65535):
+        errors.append("web_port should be between 1024 and 65535")
+    
+    return errors
+
+def get_optimization_level():
+    """Get optimization level based on detected Orange Pi model"""
+    model = ORANGEPI_CONFIG.get('orange_pi_model', 'auto')
+    max_memory = ORANGEPI_CONFIG.get('max_memory_mb', 512)
+    
+    if model in ORANGEPI_MODELS:
+        return ORANGEPI_MODELS[model]['optimizations'][0]
+    
+    # Auto-detect based on memory
+    if max_memory <= 256:
+        return 'minimal_packages'
+    elif max_memory <= 512:
+        return 'low_memory'
+    elif max_memory <= 1024:
+        return 'balanced'
+    else:
+        return 'performance'
+
+if __name__ == "__main__":
+    # Validate configuration when run directly
+    errors = validate_config()
+    if errors:
+        print("Configuration errors:")
+        for error in errors:
+            print(f"  - {error}")
+    else:
+        print("Configuration is valid")
+        print(f"Optimization level: {get_optimization_level()}")
+        print(f"Target: {ORANGEPI_CONFIG['user']}@{ORANGEPI_CONFIG['host']}")
+        print(f"Deploy path: {ORANGEPI_CONFIG['deploy_path']}")

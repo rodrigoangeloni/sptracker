@@ -1,0 +1,60 @@
+# Configuration file for Orange Pi ARM32 builds
+# Use this file as a template for your own release_settings_orangepi.py
+
+# Git configuration (if using version control)
+git = "/usr/bin/git"
+
+# Assetto Corsa installation directory (not applicable for Orange Pi server builds)
+ac_install_dir = None
+
+# Orange Pi specific build configuration
+# Build environment path
+orangepi_build_path = "/home/orangepi/sptracker_build/"
+
+# Python executable for Orange Pi
+python_executable = "/usr/bin/python3"
+
+# Package dependencies for Orange Pi
+orangepi_dependencies = [
+    "python3-dev",
+    "python3-pip", 
+    "python3-venv",
+    "build-essential",
+    "libsqlite3-dev",
+    "sqlite3",
+    "libpq-dev",  # For PostgreSQL support
+    "pkg-config"
+]
+
+# Remote build configuration (if building from another machine)
+# Set to None if building directly on Orange Pi
+remote_orangepi_build = {
+    "enabled": False,  # Set to True if building remotely
+    "host": "orangepi@192.168.1.100",  # Orange Pi IP address
+    "ssh_key": "/path/to/ssh/key",      # SSH key for passwordless access
+    "remote_path": "/home/orangepi/sptracker/",
+    "build_command": ["bash", "create_release_orangepi_arm32.sh"]
+}
+
+# Optimization settings for Orange Pi
+orangepi_optimizations = {
+    "pyinstaller_options": [
+        "--exclude-module", "tkinter",
+        "--exclude-module", "matplotlib", 
+        "--exclude-module", "numpy",
+        "--strip"  # Strip debug symbols to reduce size
+    ],
+    "compress_executable": True,
+    "remove_debug_info": True
+}
+
+# Target architecture verification
+target_architecture = "armv7l"  # Orange Pi typical architecture
+
+# Build output configuration
+build_output = {
+    "package_name": "stracker_orangepi_arm32",
+    "include_deployment_script": True,
+    "include_systemd_service": True,
+    "include_init_script": True
+}

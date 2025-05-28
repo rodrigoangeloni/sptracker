@@ -1,0 +1,69 @@
+# =====================================================
+# CONFIGURACIÓN DE COMPILACIÓN SPTRACKER
+# =====================================================
+# 
+# INSTRUCCIONES:
+# 1. Copia este archivo como "release_settings.py"
+# 2. Edita las rutas según tu sistema
+# 3. Las rutas de Windows usan r"..." para evitar problemas con \
+#
+# EJEMPLO:
+# cp release_settings.py.in release_settings.py
+# 
+
+# =====================================================
+# CONFIGURACIÓN DE GIT
+# =====================================================
+# Ruta al ejecutable de Git (ajustar según tu instalación)
+git = r"C:\Program Files\Git\bin\git.exe"
+# Alternativas comunes:
+# git = r"C:\Program Files (x86)\Git\bin\git.exe"
+# git = "git"  # Si está en PATH
+
+# =====================================================
+# ASSETTO CORSA (Solo necesario para compilar ptracker)
+# =====================================================
+# Ruta de instalación de Assetto Corsa
+ac_install_dir = r"C:\Program Files (x86)\Steam\steamapps\common\assettocorsa"
+# Alternativas comunes:
+# ac_install_dir = r"C:\Steam\steamapps\common\assettocorsa"
+# ac_install_dir = r"D:\Steam\steamapps\common\assettocorsa"
+
+# =====================================================
+# COMPILACIÓN REMOTA LINUX (Opcional)
+# =====================================================
+# Solo necesario si quieres compilar para Linux desde Windows
+# usando un servidor remoto
+
+# Ruta al plink.exe (PuTTY)
+plink = r"C:\Program Files (x86)\putty\plink.exe"
+# Alternativas:
+# plink = r"C:\Program Files\PuTTY\plink.exe"
+# plink = "plink"  # Si está en PATH
+
+# Configuración del servidor Linux remoto
+remote_path = "/tmp/sptracker_build/"  # Ruta en el servidor Linux
+host = "usuario@servidor-linux"        # usuario@ip-del-servidor
+
+# Comando para ejecutar la compilación remota
+REMOTE_BUILD_CMD = [plink, host, "cd " + remote_path + " && sh create_release.sh"]
+
+# Comando para copiar el archivo .tgz resultante (opcional)
+# Usar None si usas una carpeta compartida
+REMOTE_COPY_RESULT = None
+
+# =====================================================
+# NOTAS IMPORTANTES:
+# =====================================================
+#
+# Para Orange Pi / ARM32:
+# - No necesitas configurar Linux remoto
+# - Se usará create_release_orangepi_arm32.sh automáticamente
+#
+# Para compilación completa:
+# - Asegúrate de que Assetto Corsa esté instalado
+# - Instala NSIS desde https://nsis.sourceforge.io/
+#
+# Verificar configuración:
+# python create_release.py --test_release_process --orangepi_arm32_only test
+#

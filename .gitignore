@@ -1,19 +1,63 @@
+# =====================================================
+# CONFIGURACIÓN LOCAL Y ARCHIVOS GENERADOS
+# =====================================================
+
 # used for local settings, copy from release_settings.py.in manually
 /release_settings.py
 
 # create_release.py output
 /versions
 stracker/stracker_linux_x86.tgz
+stracker/stracker_orangepi_arm32.tgz
 nsis_temp_files0
 ptracker-server-dist.py
 ptracker.nsh
 stracker/stracker-default.ini
 
+# Orange Pi build outputs
+stracker/deploy_orangepi.sh
+orangepi_build.log
+
 # stracker-packager output
 stracker-package.zip
 
+# Virtual environments
+/env/
+/venv/
+/.venv/
+
+# =====================================================
+# IDEs Y EDITORES
+# =====================================================
+
 # Ignore IDE files
 /.vscode/
+/.idea/
+*.swp
+*.swo
+*~
+
+# =====================================================
+# ARCHIVOS TEMPORALES DEL SISTEMA
+# =====================================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# =====================================================
+# ARCHIVOS IGNORADOS POR PYTHON Y HERRAMIENTAS RELACIONADAS
+# =====================================================
 
 ## Standard Python .gitignore from Github
 # Byte-compiled / optimized / DLL files

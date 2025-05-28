@@ -1,8 +1,24 @@
-# Introduction
+# SPTracker - Assetto Corsa Telemetry Suite
 
 This is the source code of `ptracker` and `stracker` (or in short: `sptracker`), an app suite for 
-Assetto Corsa. The original author (NEYS) has stopped development and I've taken it upon myself
-to revitalize and improve this project.
+Assetto Corsa. 
+
+**Original Author**: NEYS  
+**Updated and Enhanced by**: Rodrigo Angeloni
+
+This fork includes significant improvements and new features including:
+- Orange Pi / ARM32 support for headless server deployment
+- Enhanced build system with cross-platform compilation
+- Automated setup and deployment scripts
+- Improved documentation and user guides
+- Performance optimizations for embedded systems
+
+## 📚 Documentation / Documentación
+
+- **🇬🇧 English**: This README (below)
+- **🇪🇸 Español**: [README_ES.md](README_ES.md) - Guía completa en español
+- **⚡ Quick Commands**: [COMANDOS_RAPIDOS.md](COMANDOS_RAPIDOS.md) - Comandos rápidos en español
+- **🍊 Orange Pi/ARM32**: [README_OrangePi.md](README_OrangePi.md) - Orange Pi specific guide
 
 Please respect the license as provided in [LICENSE.txt].
 
@@ -28,9 +44,13 @@ NEYS has since said on [RaceDepartment.com](https://www.racedepartment.com/threa
 > in the AC mods went also down. If you want to take over the project I am open to reference the
 > fork in the main page here on RD, such that users are guided to your page. 
 
-So I have setup a [GitHub repo](https://github.com/docwilco/sptracker) to work
-on this project, and allow others to easily collaborate. Feel free to file
-issues and do pull requests.
+So Rodrigo Angeloni has taken over the project to enhance and modernize it, with a focus on:
+- Adding Orange Pi / ARM32 support for embedded deployments
+- Improving the build system and documentation
+- Adding automated deployment tools
+- Performance optimizations
+
+You can find this enhanced version at https://github.com/rodrigoangeloni/sptracker and collaborate through issues and pull requests.
 
 # Getting started
 
@@ -49,4 +69,5 @@ using virtualenv and pip, and building, but before running it, you need:
 The original author NEYS is contactable as user `never_eat_yellow_snow1` at the
 [Assetto Corsa forums](http://www.assettocorsa.net/forum/index.php) or as user `Neys` at the 
 [RaceDepartment forums](http://www.racedepartment.com/forums/).
-You can contact the current maintainer (DocWilco) on [GitHub](https://github.com/docwilco/sptracker).
+
+The current maintainer (Rodrigo Angeloni) can be contacted through GitHub issues at https://github.com/rodrigoangeloni/sptracker.

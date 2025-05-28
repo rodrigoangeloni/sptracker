@@ -1,4 +1,3 @@
-
 # This file is part of sptracker.
 #
 #    sptracker is free software: you can redistribute it and/or modify
@@ -33,6 +32,7 @@ test_release_process = False
 build_ptracker = False
 build_stracker_windows = False
 build_stracker_linux = False
+build_stracker_orangepi_arm32 = False
 build_stracker_packager = False
 
 if "--test_release_process" in sys.argv:
@@ -58,6 +58,13 @@ if "--stracker_packager_only" in sys.argv:
     stracker_packager_only = True
     test_release_process = True
 
+# New Orange Pi ARM32 option
+orangepi_arm32_only = False
+if "--orangepi_arm32_only" in sys.argv:
+    sys.argv.remove('--orangepi_arm32_only')
+    orangepi_arm32_only = True
+    test_release_process = True
+
 linux_only = False
 if "--linux_only" in sys.argv:
     sys.argv.remove('--linux_only')
@@ -70,7 +77,7 @@ if "--windows_only" in sys.argv:
     windows_only = True
     test_release_process = True
 
-if ptracker_only or stracker_only or stracker_packager_only:
+if ptracker_only or stracker_only or stracker_packager_only or orangepi_arm32_only:
     if ptracker_only:
         build_ptracker = True
     if stracker_only:
@@ -78,6 +85,8 @@ if ptracker_only or stracker_only or stracker_packager_only:
         build_stracker_windows = True
     if stracker_packager_only:
         build_stracker_packager = True
+    if orangepi_arm32_only:
+        build_stracker_orangepi_arm32 = True
 else:
     build_ptracker = True
     build_stracker_windows = True
@@ -89,13 +98,20 @@ if windows_only and linux_only:
     sys.exit(1)
 if windows_only:
     build_stracker_linux = False
+    build_stracker_orangepi_arm32 = False
 if linux_only:
     build_ptracker = False
     build_stracker_windows = False
     build_stracker_packager = False
+if orangepi_arm32_only:
+    build_ptracker = False
+    build_stracker_windows = False
+    build_stracker_linux = False
+    build_stracker_packager = False
+    build_stracker_orangepi_arm32 = True
 
 if len(sys.argv) != 2:
-    print ("Usage: create_release [--test_release_process] [--ptracker_only] [--stracker_only] [--linux_only] [--windows_only] [--stracker_packager_only] <version_number>")
+    print ("Usage: create_release [--test_release_process] [--ptracker_only] [--stracker_only] [--linux_only] [--windows_only] [--stracker_packager_only] [--orangepi_arm32_only] <version_number>")
     sys.exit(1)
 
 if not test_release_process:
@@ -107,11 +123,21 @@ if not test_release_process:
 
 version = sys.argv[1]
 
-# Create virtualenv in case it doesn't exist yet
-subprocess.run(["virtualenv", "env/windows"], check=True, universal_newlines=True)
+# Create virtualenv in case it doesn't exist yet (only for Windows/Linux builds)
+if not orangepi_arm32_only:
+    try:
+        subprocess.run(["virtualenv", "env/windows"], check=True, universal_newlines=True)
+    except FileNotFoundError:
+        # Fall back to python -m venv if virtualenv is not available
+        subprocess.run(["python", "-m", "venv", "env/windows"], check=True, universal_newlines=True)
 
-# Use virtualenv
-exec(open("env/windows/Scripts/activate_this.py").read())
+    # Use virtualenv (only if available)
+    activate_script = "env/windows/Scripts/activate_this.py"
+    if os.path.exists(activate_script):
+        exec(open(activate_script).read())
+    else:
+        # For venv created environments, we'll rely on subprocess calls with the venv python
+        pass
 
 if not linux_only:
     do_install = True
@@ -130,15 +156,18 @@ if not linux_only:
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "python-dateutil"], check=True, universal_newlines=True)
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "wsgi-request-logger"], check=True, universal_newlines=True)
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "simplejson"], check=True, universal_newlines=True)
-        subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)
-        subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide2"], check=True, universal_newlines=True)
-        # Since this downloads the entire file and is version locked, don't do it if already installed
-        try:
-            subprocess.run(["env\windows\Scripts\pip.exe", "show", "aspw"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except:
-            subprocess.run(["env\windows\Scripts\pip.exe", "install", "https://github.com/rogerbinns/apsw/releases/download/3.35.4-r1/apsw-3.35.4-r1.zip",
-                            "--global-option=fetch", "--global-option=--version", "--global-option=3.35.4", "--global-option=--all",
-                            "--global-option=build", "--global-option=--enable-all-extensions"], check=True,universal_newlines=True)
+        subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)        # PySide2 is only needed for ptracker GUI (not for Orange Pi server builds)
+        if not orangepi_arm32_only:
+            # Since this downloads the entire file and is version locked, don't do it if already installed
+            subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide2"], check=True, universal_newlines=True)
+        # APSW is optional for Orange Pi builds (SQLite3 built-in is sufficient)
+        if not orangepi_arm32_only:
+            try:
+                subprocess.run(["env\windows\Scripts\pip.exe", "show", "aspw"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except:
+                subprocess.run(["env\windows\Scripts\pip.exe", "install", "https://github.com/rogerbinns/apsw/releases/download/3.35.4-r1/apsw-3.35.4-r1.zip",
+                                "--global-option=fetch", "--global-option=--version", "--global-option=3.35.4", "--global-option=--all",
+                                "--global-option=build", "--global-option=--enable-all-extensions"], check=True,universal_newlines=True)
         lastcheck.touch()
 
 if build_ptracker:
@@ -311,13 +340,13 @@ ptracker_lib/stdlib64/CreateFileHook.dll""".split("\n")
 #if os.path.exists("build"):
 #    shutil.rmtree("build")
 
-if build_stracker_windows or build_stracker_linux or build_stracker_packager:
+if build_stracker_windows or build_stracker_linux or build_stracker_packager or build_stracker_orangepi_arm32:
 
     os.chdir("stracker")
     if os.path.exists('dist'):
         shutil.rmtree('dist')
 
-    r = zipfile.ZipFile("../versions/stracker-V%s.zip" % version, "w")
+    r = zipfile.ZipFile("versions/stracker-V%s.zip" % version, "w")
 
     if build_stracker_windows:
         print("------------------- Building stracker.exe -------------------------------")
@@ -362,3 +391,32 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager:
             rcopy_out = subprocess.run(REMOTE_COPY_RESULT, check=True, universal_newlines=True)
 
         r.write("stracker/stracker_linux_x86.tgz", "stracker_linux_x86.tgz")
+
+    if build_stracker_orangepi_arm32:
+        print("------------------- Building stracker for Orange Pi ARM32 -------------------------------")
+        print("Note: This requires the build script to be run on an Orange Pi or ARM32 cross-compilation environment")
+        
+        # Create Orange Pi specific build command
+        ORANGEPI_BUILD_CMD = ["bash", "create_release_orangepi_arm32.sh"]
+        
+        print("Executing Orange Pi ARM32 build...")
+        print(ORANGEPI_BUILD_CMD)
+        
+        try:
+            orangepi_build_out = subprocess.run(ORANGEPI_BUILD_CMD, check=True, universal_newlines=True, 
+                                               cwd=os.path.dirname(os.path.abspath(__file__)))
+            print("Orange Pi ARM32 build completed successfully")
+            
+            # Package the result
+            r.write("stracker/stracker_orangepi_arm32.tgz", "stracker_orangepi_arm32.tgz")
+            r.write("stracker/deploy_orangepi.sh", "deploy_orangepi.sh")
+            
+        except subprocess.CalledProcessError as e:
+            print(f"Orange Pi ARM32 build failed: {e}")
+            print("Make sure you have:")
+            print("1. An Orange Pi or ARM32 development environment")
+            print("2. Python 3.7+ installed")
+            print("3. Required build dependencies (gcc, python3-dev, etc.)")
+            raise
+
+    r.close()
