@@ -159,15 +159,21 @@ if not linux_only:
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)        # PySide6 is only needed for ptracker GUI (not for Orange Pi server builds)
         if not orangepi_arm32_only:
             # Since this downloads the entire file and is version locked, don't do it if already installed
-            subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide6"], check=True, universal_newlines=True)
-        # APSW is optional for Orange Pi builds (SQLite3 built-in is sufficient)
+            subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide6"], check=True, universal_newlines=True)        # APSW is optional for Orange Pi builds (SQLite3 built-in is sufficient)
         if not orangepi_arm32_only:
             try:
-                subprocess.run(["env\windows\Scripts\pip.exe", "show", "aspw"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["env\windows\Scripts\pip.exe", "show", "apsw"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print("APSW is already installed")
             except:
-                subprocess.run(["env\windows\Scripts\pip.exe", "install", "https://github.com/rogerbinns/apsw/releases/download/3.35.4-r1/apsw-3.35.4-r1.zip",
-                                "--global-option=fetch", "--global-option=--version", "--global-option=3.35.4", "--global-option=--all",
-                                "--global-option=build", "--global-option=--enable-all-extensions"], check=True,universal_newlines=True)
+                try:
+                    print("Attempting to install APSW (optional, SQLite advanced features)...")
+                    subprocess.run(["env\windows\Scripts\pip.exe", "install", "https://github.com/rogerbinns/apsw/releases/download/3.35.4-r1/apsw-3.35.4-r1.zip",
+                                    "--global-option=fetch", "--global-option=--version", "--global-option=3.35.4", "--global-option=--all",
+                                    "--global-option=build", "--global-option=--enable-all-extensions"], check=True,universal_newlines=True)
+                    print("APSW installed successfully")
+                except:
+                    print("WARNING: Failed to install APSW. SQLite built-in will be used instead. This is fine for most use cases.")
+                    print("If you need advanced SQLite features, manually install Visual Studio Build Tools and try again.")
         lastcheck.touch()
 
 if build_ptracker:
