@@ -22,7 +22,7 @@ import ptracker_lib.expand_ac
 if "/check_install" == sys.argv[1]:
     try:
         import ptracker_lib
-        import PySide2.QtGui
+        import PySide6.QtGui
         open(ptracker_lib.expand_ac.expand_ac("Assetto Corsa","logs","log.txt"), "r")
         print("Installation seems to be ok")
         os._exit(7)
@@ -51,7 +51,7 @@ import acsys
 from ptracker_lib.client_server.client_server import *
 import ptracker_lib.client_server.client_server_impl
 
-from PySide2 import QtGui, QtWidgets
+from PySide6 import QtGui, QtWidgets
 
 #ptracker_lib.client_server.client_server_impl.debug_protocol = 1
 

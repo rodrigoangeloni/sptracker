@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
-from PySide2 import QtCore, QtGui, QtWebEngineWidgets, QtNetwork, QtWidgets
+from PySide6 import QtCore, QtGui, QtWebEngineWidgets, QtNetwork, QtWidgets
 import functools
 import time
 from ptracker_lib.helpers import *

@@ -156,10 +156,10 @@ if not linux_only:
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "python-dateutil"], check=True, universal_newlines=True)
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "wsgi-request-logger"], check=True, universal_newlines=True)
         subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "simplejson"], check=True, universal_newlines=True)
-        subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)        # PySide2 is only needed for ptracker GUI (not for Orange Pi server builds)
+        subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "pyinstaller"], check=True, universal_newlines=True)        # PySide6 is only needed for ptracker GUI (not for Orange Pi server builds)
         if not orangepi_arm32_only:
             # Since this downloads the entire file and is version locked, don't do it if already installed
-            subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide2"], check=True, universal_newlines=True)
+            subprocess.run(["env\windows\Scripts\pip.exe", "install", "--upgrade", "PySide6"], check=True, universal_newlines=True)
         # APSW is optional for Orange Pi builds (SQLite3 built-in is sufficient)
         if not orangepi_arm32_only:
             try:
