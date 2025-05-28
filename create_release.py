@@ -352,7 +352,7 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager or 
     if os.path.exists('dist'):
         shutil.rmtree('dist')
 
-    r = zipfile.ZipFile("versions/stracker-V%s.zip" % version, "w")
+    r = zipfile.ZipFile("../versions/stracker-V%s.zip" % version, "w")
 
     if build_stracker_windows:
         print("------------------- Building stracker.exe -------------------------------")
