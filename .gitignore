@@ -25,6 +25,7 @@ stracker-package.zip
 /env/
 /venv/
 /.venv/
+/venv_wsl/
 
 # =====================================================
 # IDEs Y EDITORES
