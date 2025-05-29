@@ -62,7 +62,7 @@ Esta versión incluye mejoras significativas y nuevas características:
 # https://github.com/rodrigoangeloni/sptracker/releases
 
 # 2. Ejecutar el instalador
-ptracker-V[version].exe
+ptracker-V4.0.1.exe
 
 # 3. Configurar en Assetto Corsa:
 # - Ir a Options > General > UI Modules
@@ -72,8 +72,8 @@ ptracker-V[version].exe
 ### Para Linux/Orange Pi (Servidor)
 ```bash
 # Descargar y extraer
-wget https://github.com/rodrigoangeloni/sptracker/releases/download/v[version]/stracker-V[version].zip
-unzip stracker-V[version].zip
+wget https://github.com/rodrigoangeloni/sptracker/releases/download/v4.0.1/stracker-V4.0.1.zip
+unzip stracker-V4.0.1.zip
 cd stracker
 
 # Ejecutar servidor
