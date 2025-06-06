@@ -1,0 +1,55 @@
+# SPTracker ARM32 Builder - Compilación Rápida
+# ============================================
+# Imagen optimizada para compilación rápida en Orange Pi ARM32
+
+FROM arm32v7/python:3.9-slim
+
+# Metadatos
+LABEL maintainer="Rodrigo Angeloni"
+LABEL description="SPTracker ARM32 Fast Builder for Orange Pi"
+LABEL version="4.0.1"
+
+# Variables de entorno
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV TARGET_ARCH=arm32
+
+# Instalar dependencias básicas
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    python3-dev \
+    git \
+    wget \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos del proyecto
+COPY . .
+
+# Actualizar pip y setuptools
+RUN python3 -m pip install --upgrade pip setuptools wheel
+
+# Instalar dependencias mínimas para ARM32 (sin GUI)
+RUN pip install --no-cache-dir \
+    bottle \
+    cherrypy \
+    python-dateutil \
+    wsgi-request-logger \
+    simplejson \
+    pyinstaller
+
+# Nota: No instalamos PySide6 ni APSW en ARM32 (no necesarios para servidor)
+# Nota: No instalamos psycopg2 (PostgreSQL) por defecto en ARM32
+
+# Script de entrada
+COPY docker/build_arm32.sh /build_arm32.sh
+RUN chmod +x /build_arm32.sh
+
+# Comando por defecto
+ENTRYPOINT ["/build_arm32.sh"]
+CMD ["4.0.1-arm32-docker"]

@@ -1,0 +1,69 @@
+# Docker ignore file for SPTracker ARM32 builds
+# ==============================================
+
+# Archivos de compilación y distribución
+build/
+dist/
+*.spec
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Entornos virtuales (no necesarios en Docker)
+env/
+venv/
+.venv/
+venv_wsl/
+
+# Archivos de configuración local
+release_settings.py
+
+# Archivos temporales
+*.log
+compile_*.log
+nsis_temp_files*
+*.tmp
+*.temp
+
+# Archivos específicos de Windows (no necesarios en ARM32)
+*.exe
+*.dll
+*.cmd
+*.bat
+*.nsh
+
+# Archivos de versiones previas
+versions/
+
+# IDE y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentación (para reducir tamaño de imagen)
+*.md
+www/
+
+# Archivos de desarrollo que no se necesitan en ARM32
+create_file_hook/
+stresstest/
+
+# Archivos específicos de Windows
+🎯 COMPILAR FÁCIL.cmd
+🚀 COMPILAR SPTRACKER.cmd
+build_windows.cmd
+build_windows.ps1
+compile_easy.ps1
+inicio_rapido.ps1
+*.ps1
+
+# Archivos de Orange Pi que se generan
+orangepi-build.ps1

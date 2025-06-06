@@ -1,0 +1,33 @@
+# SPTracker ARM32 Test Environment
+# ================================
+# Imagen para probar el entorno ARM32 sin compilar
+
+FROM arm32v7/python:3.9-slim
+
+# Metadatos
+LABEL maintainer="Rodrigo Angeloni"
+LABEL description="SPTracker ARM32 Test Environment"
+LABEL version="4.0.1"
+
+# Variables de entorno
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Instalar herramientas básicas
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    python3-dev \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar solo archivos necesarios para test
+COPY docker/test_arm32.sh /test_arm32.sh
+RUN chmod +x /test_arm32.sh
+
+# Comando por defecto
+ENTRYPOINT ["/test_arm32.sh"]

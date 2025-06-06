@@ -1,0 +1,19 @@
+# SPTracker Docker ARM32 Cross-Compilation Test
+# ============================================
+# Quick test to verify Docker ARM32 environment
+
+FROM arm32v7/alpine:latest
+
+RUN apk add --no-cache python3 py3-pip build-base
+
+WORKDIR /test
+
+# Create a simple test script
+RUN echo '#!/usr/bin/env python3' > test.py && \
+    echo 'import platform, sys' >> test.py && \
+    echo 'print(f"✅ Python {sys.version}")' >> test.py && \
+    echo 'print(f"✅ Platform: {platform.machine()}")' >> test.py && \
+    echo 'print(f"✅ Architecture: {platform.architecture()}")' >> test.py && \
+    echo 'print("🍊 ARM32 Docker environment ready!")' >> test.py
+
+CMD ["python3", "test.py"]

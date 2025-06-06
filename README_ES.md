@@ -168,7 +168,33 @@ python3 create_release.py --stracker_only --linux_only 1.0.0
 
 ## 🍊 Compilación para Orange Pi / ARM32
 
-### Opción 1: Compilación Directa en Orange Pi
+### 🐳 Opción 1: Docker Cross-Compilación (Recomendada para Windows)
+
+**La forma más fácil de compilar para Orange Pi sin tener el dispositivo:**
+
+```powershell
+# 1. Configurar Docker automáticamente
+setup_docker_arm32.cmd
+
+# 2. Probar entorno (opcional)
+test_docker_arm32.cmd
+
+# 3. Compilar para Orange Pi
+docker_build_arm32.cmd
+```
+
+**Características:**
+- ✅ No requiere Orange Pi físico
+- ✅ Compilación completa desde Windows
+- ✅ Emulación ARM32 con Docker + QEMU
+- ✅ Genera binarios nativos ARM32
+- ⏱️ Tiempo: 15-30 minutos
+
+**Archivos generados:**
+- `versions/stracker_orangepi_arm32.tgz` - Binario ARM32 para Orange Pi
+- `versions/deploy_orangepi.sh` - Script de despliegue automático
+
+### Opción 2: Compilación Directa en Orange Pi
 
 **Preparar Orange Pi:**
 ```bash

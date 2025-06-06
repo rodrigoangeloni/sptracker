@@ -400,29 +400,97 @@ if build_stracker_windows or build_stracker_linux or build_stracker_packager or 
 
     if build_stracker_orangepi_arm32:
         print("------------------- Building stracker for Orange Pi ARM32 -------------------------------")
-        print("Note: This requires the build script to be run on an Orange Pi or ARM32 cross-compilation environment")
         
-        # Create Orange Pi specific build command
-        ORANGEPI_BUILD_CMD = ["bash", "create_release_orangepi_arm32.sh"]
+        # Detect if we're running in Docker ARM32 environment
+        import platform
+        current_arch = platform.machine()
+        is_arm = current_arch.startswith('arm') or current_arch == 'armv7l'
         
-        print("Executing Orange Pi ARM32 build...")
-        print(ORANGEPI_BUILD_CMD)
+        if is_arm:
+            print(f"✅ ARM32 environment detected: {current_arch}")
+            print("🏗️ Building directly in ARM32 environment...")
+            
+            # Build directly using PyInstaller in ARM32 environment
+            os.chdir("stracker")
+            try:
+                # Clean previous builds
+                if os.path.exists('dist'):
+                    shutil.rmtree('dist')
+                if os.path.exists('build'):
+                    shutil.rmtree('build')
+                
+                print("🔧 Running PyInstaller for ARM32...")
+                subprocess.run(["python3", "-m", "PyInstaller", 
+                               "--name", "stracker",
+                               "--clean", "-y", "--onefile", 
+                               "--exclude-module", "http_templates",
+                               "--exclude-module", "PySide6",
+                               "--exclude-module", "tkinter",
+                               "--hidden-import", "cherrypy.wsgiserver.wsgiserver3",
+                               "--path", "..", "--path", "externals",
+                               "stracker.py"], 
+                              check=True, universal_newlines=True)
+                
+                # Create default config
+                if os.path.exists('stracker-default.ini'):
+                    os.remove('stracker-default.ini')
+                subprocess.run(["./dist/stracker", "--stracker_ini", "stracker-default.ini"], 
+                              universal_newlines=True)
+                
+                # Create ARM32 package
+                print("📦 Creating ARM32 package...")
+                subprocess.run(["tar", "-czf", "stracker_orangepi_arm32.tgz", 
+                               "dist/stracker", "stracker-default.ini"], 
+                              check=True, universal_newlines=True)
+                
+                # Create deployment script
+                deploy_script = """#!/bin/bash
+# SPTracker Orange Pi ARM32 Deployment Script
+echo "🍊 Deploying SPTracker on Orange Pi..."
+tar -xzf stracker_orangepi_arm32.tgz
+chmod +x dist/stracker
+echo "✅ Ready! Run: ./dist/stracker"
+"""
+                with open("deploy_orangepi.sh", "w") as f:
+                    f.write(deploy_script)
+                os.chmod("deploy_orangepi.sh", 0o755)
+                
+                print("✅ ARM32 build completed successfully")
+                
+            except subprocess.CalledProcessError as e:
+                print(f"❌ ARM32 build failed: {e}")
+                raise
+            finally:
+                os.chdir("..")
+                
+        else:
+            print(f"⚠️  Non-ARM environment detected: {current_arch}")
+            print("🐳 Attempting Docker cross-compilation or external build...")
+            
+            # Try existing build script for cross-compilation
+            ORANGEPI_BUILD_CMD = ["bash", "create_release_orangepi_arm32.sh"]
+            
+            print("Executing Orange Pi ARM32 build...")
+            print(ORANGEPI_BUILD_CMD)
+            
+            try:
+                orangepi_build_out = subprocess.run(ORANGEPI_BUILD_CMD, check=True, universal_newlines=True, 
+                                                   cwd=os.path.dirname(os.path.abspath(__file__)))
+                print("Orange Pi ARM32 build completed successfully")
+                
+            except subprocess.CalledProcessError as e:
+                print(f"Orange Pi ARM32 build failed: {e}")
+                print("💡 TIP: Use Docker cross-compilation:")
+                print("   docker_build_arm32.cmd")
+                raise
         
+        # Package the result in ZIP
         try:
-            orangepi_build_out = subprocess.run(ORANGEPI_BUILD_CMD, check=True, universal_newlines=True, 
-                                               cwd=os.path.dirname(os.path.abspath(__file__)))
-            print("Orange Pi ARM32 build completed successfully")
-            
-            # Package the result
             r.write("stracker/stracker_orangepi_arm32.tgz", "stracker_orangepi_arm32.tgz")
-            r.write("stracker/deploy_orangepi.sh", "deploy_orangepi.sh")
-            
-        except subprocess.CalledProcessError as e:
-            print(f"Orange Pi ARM32 build failed: {e}")
-            print("Make sure you have:")
-            print("1. An Orange Pi or ARM32 development environment")
-            print("2. Python 3.7+ installed")
-            print("3. Required build dependencies (gcc, python3-dev, etc.)")
-            raise
+            if os.path.exists("stracker/deploy_orangepi.sh"):
+                r.write("stracker/deploy_orangepi.sh", "deploy_orangepi.sh")
+        except FileNotFoundError as e:
+            print(f"⚠️  Warning: Could not add ARM32 files to ZIP: {e}")
+            print("   ARM32 files may be available separately")
 
     r.close()

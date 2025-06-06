@@ -1,0 +1,75 @@
+# SPTracker ARM32 Builder - Compilación Completa
+# ===============================================
+# Imagen completa con todas las dependencias para Orange Pi ARM32
+
+FROM arm32v7/python:3.9-slim
+
+# Metadatos
+LABEL maintainer="Rodrigo Angeloni"
+LABEL description="SPTracker ARM32 Complete Builder for Orange Pi"
+LABEL version="4.0.1"
+
+# Variables de entorno
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV TARGET_ARCH=arm32
+ENV PYINSTALLER_COMPILE_BOOTLOADER=1
+
+# Instalar dependencias completas
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    python3-dev \
+    python3-setuptools \
+    python3-pip \
+    git \
+    wget \
+    curl \
+    pkg-config \
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libncurses5-dev \
+    libncursesw5-dev \
+    xz-utils \
+    tk-dev \
+    libxml2-dev \
+    libxmlsec1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos del proyecto
+COPY . .
+
+# Actualizar pip y setuptools
+RUN python3 -m pip install --upgrade pip setuptools wheel
+
+# Instalar dependencias completas
+RUN pip install --no-cache-dir \
+    bottle \
+    cherrypy \
+    python-dateutil \
+    wsgi-request-logger \
+    simplejson \
+    pyinstaller \
+    cython
+
+# Intentar instalar psycopg2 (PostgreSQL) - opcional para ARM32
+RUN pip install --no-cache-dir psycopg2-binary || echo "PostgreSQL support skipped (optional for ARM32)"
+
+# Configurar PyInstaller para ARM32
+RUN python3 -c "import PyInstaller; print('PyInstaller ready for ARM32')"
+
+# Script de entrada
+COPY docker/build_arm32.sh /build_arm32.sh
+RUN chmod +x /build_arm32.sh
+
+# Comando por defecto
+ENTRYPOINT ["/build_arm32.sh"]
+CMD ["4.0.1-arm32-complete"]
